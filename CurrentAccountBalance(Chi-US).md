@@ -15,7 +15,7 @@ header-includes:
 
 
 ##1)Вступление
-В этом небольшом исследовании, автор поставил перед собой задачу подтвердить либо опровергнуть выводы, сделанные Дж. Арриги в рамках своей теории системных циклов накопления капиталов, о том, что мир находится в процессе перехода на новый, Азиатский цикл накопления. В своей книге «Долгий двадцатый век» он выделяет четыре исторических цикла накопления – Генуэзский системный цикл накопления(XV-XVI), Голландский системный цикл накопления (XVII – XVIII века), Британский системный цикл накопления(XIX - начало ХХ века) и последний, который находится в своей завершающей стадии - Американский системный цикл накопления(ХХ - начало XXI века). Уже в своей следующей и последней книге «Адам Смит в Пекине, Арриги уточняет, что новым ядром накопления является именно Китай. 
+В этом небольшом исследовании, автор поставил перед собой задачу подтвердить либо опровергнуть выводы, сделанные Дж. Арриги в рамках своей теории системных циклов накопления капиталов, о том, что мир находится в процессе перехода на новый, Азиатский цикл накопления. В книге «Долгий двадцатый век» он выделяет четыре исторических цикла накопления – Генуэзский системный цикл накопления(XV-XVI), Голландский системный цикл накопления (XVII – XVIII века), Британский системный цикл накопления(XIX - начало ХХ века) и последний, который находится в своей завершающей стадии - Американский системный цикл накопления(ХХ - начало XXI века). Уже в следующей и последней книге "Адам Смит в Пекине", Арриги уточняет, что новым ядром накопления является именно Китай. 
 Для анализа предлагается рассмотреть несколько экономических показателей. Начнем с анализа баланса счета текущих операций стран Запада и стран АТР. 
 
 [Счёт текущих операций][1] — раздел платёжного баланса страны, в котором фиксируются экспорт и импорт товаров и услуг, чистый доход от инвестиций и чистый объём трансфертных платежей.
@@ -56,43 +56,77 @@ colnames(cab_data) <- c("value", "year", "country")
 ```
 
 
-## 3)Анализ изменений счета текущих операций платежного баланса стран Азиатско-Тихоокеанского региона 
+## 3)Анализ изменений счета текущих операций платежного баланса стран Восточной Азии
 
 ```r
-# Вытягиваем из таблицы нужные для анализа страны. Ядро АТР
-atrn <- grep("India|Japan|Indonesia|Korea, Rep|Russia|Singapore|
-                      |Thailand|Malasiya|Philippines|Vietnam|Bangladesh", cab_data$country)
+# Вытягиваем из таблицы нужные для анализа страны восточной Азии
+## Первая волна азиатских "тигров"(без Тайваня, который ВБ объеденяет с Китаем)
+firstTigersn <- grep("Korea, Rep|Singapore|Hong Kong", cab_data$country)
+## Вторая волна азиатских "тигров"
+secondTigersn <- grep("Malaysia|Indonesia|Thailand", cab_data$country)
+## Япония
+japann <- grep("Japan", cab_data$country)
+## Индия 
+indian <- grep("India", cab_data$country)
+## Новые индустриальные страны восточной азии
+restAsian <- grep("Philippines|Vietnam|Bangladesh", cab_data$country)
 
-# Создаем новую таблицу основных стран АТР (без Китая)
-atr <- data.frame()
-for(i in atrn){
-        atr <- rbind(atr, cab_data[i,])
+# Создаем таблицу стран Восточной Азии первой волны "Тигров"
+firstTigers <- data.frame()
+for(i in firstTigersn){
+        firstTigers <- rbind(firstTigers, cab_data[i,])
+}
+
+# Создаем таблицу стран Восточной Азии второй волны "Тигров"
+secondTigers <- data.frame()
+for(i in secondTigersn){
+        secondTigers <- rbind(secondTigers, cab_data[i,])
+}
+
+# Создаем таблицу Японии
+japan <- data.frame()
+for(i in japann){
+       japan <- rbind(japan, cab_data[i,])
+}
+
+# Создаем таблицу Индии
+india <- data.frame()
+for(i in indian){
+       india <- rbind(india, cab_data[i,])
+}
+
+# Создаем таблицу дргих основных стран Региона, куда относится Япония, Индия и НИС
+restAsia <- data.frame()
+for(i in restAsian){
+        restAsia <- rbind(restAsia, cab_data[i,])
 }
 ```
 
-Учитывая что ВБ дает отдельные данные по Китаю, Гон-Конгу и Макао, придется в ручную объеденить их единую таблицу под названием Китай. 
+Всемирный Банк предоставляет данные по Китаю, Гонконгу и Макао в отдельности. Поэтому самостоятельно объединяем данные Макао с Китаем, оставляя Гонконг отдельным счетом, для анализа роста "Азиатских тигров", к которым он относится. Данные по другому "тигру" - Тайвань, ВБ к сожалению, не предоставляет, поэтому в анализе мы его не учитываем.  
 
 ```r
-atrn <- grep("China", cab_data$country)
+chinan <- grep("China", cab_data$country)
 
-atrC <- data.frame()
-for(i in atrn){
-        atrC <- rbind(atrC, cab_data[i,])
+china <- data.frame()
+for(i in chinan){
+        china <- rbind(china, cab_data[i,])
 }
 
-# Объеденяем данные Гон-Конга и Макао с общими данными Китая
+# Удаляем данные Гонконга
+china <- china[-(26:43),]
 
-atrC[grepl("Hong|Macao", atrC$country, ignore.case=T), c("country")] <- "China"
+# Объединяем данные Макао с общими данными Китая
+china[grepl("Macao", china$country, ignore.case=T), c("country")] <- "China"
 
-# Убераем повоторения China по годам
+# Убираем повторения China по годам
 chinaHM <- data.frame()
-temp2 <- filter(atrC, year == "1991" , country == "China")
+temp2 <- filter(china, year == "1991" , country == "China")
 temp2 <- list(sum(temp2$value), as.numeric(temp2[1,2]), "China")
 chinaHM <- rbind(chinaHM, temp2)
 
-# Создаем новую таблицу, которая объеденяет данные China, Hong-Kong и Macao
+# Создаем новую таблицу, которая объединяет данные China и Macao
 for (i in c(1992:2015)){
-temp <- filter(atrC, year == i , country == "China")
+temp <- filter(china, year == i , country == "China")
 temp <- c(sum(temp$value), as.numeric(temp[1,2]), "China")
 chinaHM <- rbind(chinaHM, temp)
 }
@@ -100,87 +134,135 @@ chinaHM <- rbind(chinaHM, temp)
 # Корректируем названия колонок 
 names(chinaHM) <- c("value", "year", "country")
 
-chinaHM <- arrange(chinaHM, desc(year))
-# Переводим колонку valuу из factor в numeric
-chinaHM$value <- as.numeric(as.character(chinaHM$value))
-# Добавляем Китай в таблицу выбранных стран АТР с очищенными выше данными 
-atr <- rbind(atr,chinaHM)
-atr <- arrange(atr, country, year) 
-# Для возможности реализации графика
-atr$value <- as.numeric(atr$value)
-atr$year <- as.numeric(atr$year)
+# Создаем таблицу объединенных данных Китая и Макао
+china <- arrange(chinaHM, desc(year))
+# Переводим колонку valuу и year в numeric 
+china$value <- as.numeric(as.character(china$value))
+china$year <- as.numeric(china$year)
 ```
 
-Отчет по странам АТР
+Создаем единую объединенную таблицу данных для стран Восточной Азии.
 
 ```r
-summary(atr)
+# Добавляем Китай в таблицу выбранных стран восточной Азии с очищенными выше данными 
+asia <- rbind(china,firstTigers, secondTigers, japan, india, restAsia)
+asia <- arrange(asia, country, desc(year)) 
+# Для возможности реализации графика
+asia$value <- as.numeric(asia$value)
+asia$year <- as.numeric(asia$year)
+```
+
+
+Отчет по странам Восточной Азии
+
+```r
+summary(asia)
 ```
 
 ```
 ##      value              year             country   
-##  Min.   :-91.471   Min.   :1991   Bangladesh : 25  
-##  1st Qu.: -1.026   1st Qu.:1998   China      : 25  
-##  Median :  5.394   Median :2004   India      : 25  
-##  Mean   : 29.922   Mean   :2004   Indonesia  : 25  
-##  3rd Qu.: 32.125   3rd Qu.:2010   Korea, Rep.: 25  
-##  Max.   :456.795   Max.   :2015   Philippines: 25  
-##                                   (Other)    :112
+##  Min.   :-91.471   Min.   :1991   China      : 25  
+##  1st Qu.: -1.301   1st Qu.:1998   Bangladesh : 25  
+##  Median :  5.783   Median :2004   India      : 25  
+##  Mean   : 25.063   Mean   :2004   Indonesia  : 25  
+##  3rd Qu.: 20.953   3rd Qu.:2010   Korea, Rep.: 25  
+##  Max.   :423.923   Max.   :2015   Malaysia   : 25  
+##                                   (Other)    :133
 ```
 
-### График изменений счета текущих операций платежного баланса по основным странам АТР
+### График изменений счета текущих операций платежного баланса по выбранным странам в. Азии
 
 ```r
-# График изменений счета текущих операций платежного баланса ТОП6 стран АТР -> подготовка данных
-atrtop6 <- atr %>% arrange(country, desc(year))
-atrtop6 <- atrtop6[c(26:145,171:192),]
-
-# График изменений счета текущих операций платежного баланса ТОП6 стран АТР -> построение графика
-ggplot(data = atrtop6, aes(x = year, y = value))+
+# График изменений счета текущих операций платежного баланса "первых тигров"
+ggplot(data = firstTigers, aes(x = year, y = value))+
         geom_line(colour="darkblue")+
         geom_point(aes(colour=country))+
         theme_bw()+
         xlab("Year")+
         ylab("Billions of $ USD")+
-        ggtitle("Current account balance of payments - ATR top 6") + 
-        facet_grid(country~., scales = "free")
+        ggtitle("Current account balance of payments - first Tigers")+ 
+        facet_grid(country~., scales = "free") 
 ```
 
-![plot of chunk unnamed-chunk-341](figure/unnamed-chunk-341-1.png)
+![plot of chunk unnamed-chunk-331](figure/unnamed-chunk-331-1.png)
 
 ```r
-# График изменений счета текущих операций платежного баланса стран АТР -> подготовка данных
-atr2 <- arrange(atr, year)
-atr2$year <- as.numeric(as.character(atr2$year))
-atr2$value <- as.numeric(atr2$value)
-atrDF <- data.frame()
-tempatr <- data.frame()
+# График изменений счета текущих операций платежного баланса "вторых тигров"
+ggplot(data = secondTigers, aes(x = year, y = value))+
+        geom_line(colour="darkblue")+
+        geom_point(aes(colour=country))+
+        theme_bw()+
+        xlab("Year")+
+        ylab("Billions of $ USD")+
+        ggtitle("Current account balance of payments - second Tigers")+ 
+        facet_grid(country~., scales = "free") 
+```
+
+![plot of chunk unnamed-chunk-331](figure/unnamed-chunk-331-2.png)
+
+```r
+# График изменений счета текущих операций платежного баланса Японии, Индии и новых индустриальных стран Восточной азии 
+tempdata <- rbind(japan, india, restAsia)
+ggplot(data = tempdata, aes(x = year, y = value))+
+        geom_line(colour="darkblue")+
+        geom_point(aes(colour=country))+
+        theme_bw()+
+        xlab("Year")+
+        ylab("Billions of $ USD")+
+        ggtitle("Current account balance of payments - Japan, India and NICs of east Asia")+ 
+        facet_grid(country~., scales = "free") 
+```
+
+![plot of chunk unnamed-chunk-331](figure/unnamed-chunk-331-3.png)
+
+```r
+# График изменений счета текущих операций платежного баланса Китая
+
+ggplot(data = china, aes(x = year, y = value))+
+        geom_line(colour="darkblue")+
+        geom_point()+
+        theme_bw()+
+        xlab("Year")+
+        ylab("Billions of $ USD")+
+        ggtitle("Current account balance of payments - China") 
+```
+
+![plot of chunk unnamed-chunk-331](figure/unnamed-chunk-331-4.png)
+
+```r
+# График изменений счета текущих операций платежного баланса для стран восточной Азии в целом -> подготовка данных
+asiaDF <- data.frame()
+tempasia <- data.frame()
 
 for(i in 1991:2015){
-tempatr <- atr2 %>% filter(year == i)%>%
+tempasia <- asia %>% filter(year == i)%>%
         summarise(value = sum(value), year = i) 
-atrDF <- rbind(atrDF, tempatr)
+asiaDF <- rbind(asiaDF, tempasia)
 }
+```
+График изменений счета текущих операций платежного баланса стран восточной Азии в целом
 
-# График изменений счета текущих операций платежного баланса стран АТР  в целом -> построение графика
-ggplot(data = atrDF, aes(x = year, y = value))+
+```r
+# График изменений счета текущих операций платежного баланса стран восточной Азии  в целом -> построение графика
+ggplot(data = asiaDF, aes(x = year, y = value))+
         geom_line(colour="darkblue")+
         geom_point(colour="darkgreen")+
         geom_smooth(method = "loess")+
         xlab("Year")+
         ylab("Billions of $ USD")+
-        ggtitle("Current account balance of payments - ATR countries")
+        ggtitle("Current account balance of payments - East Asia countries")
 ```
 
-![plot of chunk unnamed-chunk-341](figure/unnamed-chunk-341-2.png)
+![plot of chunk unnamed-chunk-332](figure/unnamed-chunk-332-1.png)
 
-## 4)Рассмотрим теперь изменения счета текущих операций платежного баланса по странам Запада 
+
+## 4)Рассмотрим теперь изменения счета текущих операций платежного баланса стран Запада 
 
 ```r
-# Вытягиваем из таблицы нужные для анализа страны. Ядро западной цивилизации 
+# Выбираем из таблицы необходимые для анализа страны. Ядро Западной цивилизации 
 westn <- grep("United States|United Kingdom|Canada|Australia|Germany|France|Italy|
                       |Austria|Spain", cab_data$country)
-# Заменяем ядро европейских стран, всеми странами входящими в ЕС 
+# Выбираем данные для второй таблицы, которая включает в себя все страны ЕС, а не только ядро
 westnE <- grep("United States|Euro area|Canada|Australia", cab_data$country)
 
 
@@ -228,7 +310,7 @@ ggplot(data = west, aes(x = year, y = value))+
         facet_grid(country~., scales = "free")
 ```
 
-![plot of chunk unnamed-chunk-344](figure/unnamed-chunk-344-1.png)
+![plot of chunk unnamed-chunk-335](figure/unnamed-chunk-335-1.png)
 
 ```r
 # График изменений счета текущих операций платежного баланса стран Запада  в целом -> подготовка данных
@@ -252,66 +334,66 @@ ggplot(data = westDF, aes(x = year, y = value))+
         ggtitle("Current account balance of payments - West countries")
 ```
 
-![plot of chunk unnamed-chunk-344](figure/unnamed-chunk-344-2.png)
+![plot of chunk unnamed-chunk-335](figure/unnamed-chunk-335-2.png)
 
-## 5) Сравнение изменений счета текущих операций платежного баланса стран Запада и АТР
+## 5) Сравнение изменений счета текущих операций платежного баланса стран Запада и Восточной Азии
 
 
 ```r
 westDF$countries <- rep("West", 25)
-atrDF$countries <- rep("ATR", 25)
-s_ummery <- rbind(westDF, atrDF)
+asiaDF$countries <- rep("eastAsia", 25)
+s_ummery <- rbind(westDF, asiaDF)
 
-#Изменения счета текущих операций платежного баланса стран Запада и АТР по годам
+#Изменения счета текущих операций платежного баланса стран Запада и восточной Азии по годам
 s_ummery2 <- westDF
-s_ummery2$ATR <- atrDF$value
+s_ummery2$eastAsia <- asiaDF$value
 s_ummery2$countries <- NULL
-s_ummery2 <- s_ummery2 %>% select(Year = year, West = value, ATR = ATR)
-#Сравнительная таблица Запад-АТР
+s_ummery2 <- s_ummery2 %>% select(Year = year, West = value, eastAsia = eastAsia)
+#Сравнительная таблица Запад - восточная Азия 
 s_ummery2
 ```
 
 ```
-##    Year     West     ATR
-## 1  1991  -30.610  -6.545
-## 2  1992  -83.637  -4.503
-## 3  1993 -116.426 -18.366
-## 4  1994 -151.412   6.411
-## 5  1995 -137.291 -15.106
-## 6  1996 -136.704  41.889
-## 7  1997 -161.620 119.544
-## 8  1998 -241.818 219.505
-## 9  1999 -316.484 217.948
-## 10 2000 -433.620 236.213
-## 11 2001 -471.391 172.949
-## 12 2002 -485.801 223.723
-## 13 2003 -495.690 289.704
-## 14 2004 -626.914 385.862
-## 15 2005 -685.651 436.445
-## 16 2006 -814.864 578.188
-## 17 2007 -772.055 747.386
-## 18 2008 -714.852 694.384
-## 19 2009 -669.567 544.803
-## 20 2010 -557.371 605.519
-## 21 2011 -542.305 427.587
-## 22 2012 -562.275 372.459
-## 23 2013 -303.480 325.939
-## 24 2014 -170.435 512.873
-## 25 2015 -240.700 724.837
+##    Year     West eastAsia
+## 1  1991  -30.610  -10.728
+## 2  1992  -83.637   -6.670
+## 3  1993 -116.426  -21.357
+## 4  1994 -151.412   -5.953
+## 5  1995 -137.291  -30.713
+## 6  1996 -136.704   26.580
+## 7  1997 -161.620  114.444
+## 8  1998 -241.818  228.963
+## 9  1999 -316.484  207.697
+## 10 2000 -433.620  199.319
+## 11 2001 -471.391  148.182
+## 12 2002 -485.801  203.440
+## 13 2003 -495.690  269.957
+## 14 2004 -626.914  342.381
+## 15 2005 -685.651  372.036
+## 16 2006 -814.864  512.072
+## 17 2007 -772.055  704.963
+## 18 2008 -714.852  629.363
+## 19 2009 -669.567  526.220
+## 20 2010 -557.371  563.711
+## 21 2011 -542.305  362.805
+## 22 2012 -562.275  317.493
+## 23 2013 -303.480  303.716
+## 24 2014 -170.435  470.206
+## 25 2015 -240.700  664.797
 ```
 
 ```r
-#Сравнительный график изменений счета текущих операций платежного баланса стран Запада и АТР 
+#Сравнительный график изменений счета текущих операций платежного баланса стран Запада и восточной Азии 
 ggplot(data = s_ummery, aes(x = year, y = value))+
         geom_line(aes(colour=countries))+
         geom_point(aes(colour=countries))+
         theme_bw()+
         xlab("Year")+
         ylab("billion US dollars")+
-        ggtitle("Current account balance - ATR and West")
+        ggtitle("Current account balance - east Asia and West")
 ```
 
-![plot of chunk unnamed-chunk-345](figure/unnamed-chunk-345-1.png)
+![plot of chunk unnamed-chunk-336](figure/unnamed-chunk-336-1.png)
 
 ### Отдельное сравнение изменений счета текущих операций платежного баланса США и Китая
 
@@ -325,10 +407,10 @@ for(i in temp){
         cabUS <- rbind(cabUS, cab_data[i,])
 }
 
-#Создаем сводную таблицу измений счета текущих операций платежного баланса США и Китая по годам
-chimerica <- rbind(cabUS, chinaHM)
+#Создаем сводную таблицу изменений счета текущих операций платежного баланса США и Китая по годам
+chimerica <- rbind(cabUS, china)
 chimerica2 <- cabUS  
-chimerica2$China <- chinaHM$value
+chimerica2$China <- china$value
 chimerica2$country <- NULL
 chimerica2 <- chimerica2 %>% select(Year = year, USA = value, China = China)
 
@@ -338,24 +420,24 @@ chimerica2
 
 ```
 ##      Year      USA   China
-## 6326 2015 -462.961 353.154
-## 6327 2014 -392.066 300.299
-## 6328 2013 -366.424 173.103
-## 6329 2012 -446.527 236.433
-## 6330 2011 -460.358 164.953
-## 6331 2010 -441.963 264.911
-## 6332 2009 -384.024 270.462
-## 6333 2008 -690.789 456.795
-## 6334 2007 -718.641 384.706
-## 6335 2006 -806.726 258.578
-## 6336 2005 -745.445 156.855
-## 6337 2004 -633.768  89.284
-## 6338 2003 -521.342  63.012
-## 6339 2002 -458.092  50.903
-## 6340 2001 -395.331  27.793
-## 6341 2000 -410.762  28.063
-## 6342 1999 -295.534  31.780
-## 6343 1998 -215.037  34.342
+## 6326 2015 -462.961 343.522
+## 6327 2014 -392.066 296.511
+## 6328 2013 -366.424 168.950
+## 6329 2012 -446.527 232.286
+## 6330 2011 -460.358 151.145
+## 6331 2010 -441.963 248.899
+## 6332 2009 -384.024 249.306
+## 6333 2008 -690.789 423.923
+## 6334 2007 -718.641 357.151
+## 6335 2006 -806.726 234.023
+## 6336 2005 -745.445 135.280
+## 6337 2004 -633.768  72.462
+## 6338 2003 -521.342  45.603
+## 6339 2002 -458.092  37.774
+## 6340 2001 -395.331  17.401
+## 6341 2000 -410.762  20.518
+## 6342 1999 -295.534  21.115
+## 6343 1998 -215.037  31.472
 ## 6344 1997 -140.725  36.963
 ## 6345 1996 -124.727   7.243
 ## 6346 1995 -113.561   1.618
@@ -366,11 +448,11 @@ chimerica2
 ```
 
 ```r
-# Для коректного отображения на графике, переводим year в numeric
+# Для корректного отображения на графике, переводим year в numeric
 chimerica$year <- as.numeric(chimerica$year)
 ```
 
-Сравнительный график измений счета текущих операций платежного баланса США и Китая
+Сравнительный график изменений счета текущих операций платежного баланса США и Китая
 
 ```r
 ggplot(data = chimerica, aes(x = year, y = value))+
@@ -382,22 +464,14 @@ ggplot(data = chimerica, aes(x = year, y = value))+
         ggtitle("Current account balance - China and USA")
 ```
 
-![plot of chunk unnamed-chunk-347](figure/unnamed-chunk-347-1.png)
+![plot of chunk unnamed-chunk-338](figure/unnamed-chunk-338-1.png)
 
-## 6) ТОП 25 стран мира положительного счета текущих операций торгового баланса (с 2000 по 2015 года):
+## 6) ТОП 20 стран мира положительного счета текущих операций торгового баланса (с 2000 по 2015 года):
 
 ```r
-# Создаем таблицу стран мира без Китая, Гон-Конга и Макао
-temp <- grep("China|Hong Kong SAR, China|Macao SAR, China", cab_data$country)
-alldata <- cab_data[-temp,]
-# Объеденяем эту таблицу с объедененной ранее таблицы Китая, Гон-Конга и Макао
-alldata <- rbind(alldata, chinaHM)
-# Удаляем года 1991-1999 
-alldata <- arrange(alldata, year)
-alldata <- alldata[-(1:1289),]
-alldata <- arrange(alldata, country, desc(year))
+alldata <- arrange(cab_data, country, desc(year))
 
-#Суммируем все ежегодные результаты текущих операций торгового баланса и сводим 15-ти летний баланс по каждой из стран
+# Суммируем все ежегодные результаты текущих операций торгового баланса и сводим 15-ти летний баланс по каждой из стран
 allDF <- data.frame(value = 0, country = "country")
 l <- 1
 
@@ -411,11 +485,14 @@ for(i in alldata$country){
         
         l <- l+1
         }
-# Сортируем по значению value и выделяем первые 25 стран + Евросоюз
+# Сортируем по значению value и выделяем первые 20 стран + Евросоюз 
 top20 <- arrange(allDF, desc(value)) 
+# Объединяем результаты Китая и Макао
+top20[1,1] <- top20[1,1] + top20[23,1]
+# Удаляем из топ 20 Niger, который попал туда из-за сходства с Нигерией
+top20 <- top20[-19,]
+# Выбираем топ20
 top20 <- top20[1:20,]
-# Удаляем из топ 25 Niger, который попал туда из-за сходства с Нигерией
-top20 <- top20[-17,]
 ```
 Таблица топ 20 стран мира положительного счета текущих операций торгового баланса за 15 лет (00-15)
 
@@ -425,26 +502,27 @@ top20
 ```
 
 ```
-##       value            country
-## 1  3279.304              China
-## 2  2595.688            Germany
-## 3  2120.086              Japan
-## 4  1097.081       Saudi Arabia
-## 5   995.763 Russian Federation
-## 6   829.408        Switzerland
-## 7   801.955        Netherlands
-## 8   733.756             Norway
-## 9   686.217          Euro area
-## 10  587.708          Singapore
-## 11  572.417             Kuwait
-## 12  493.991        Korea, Rep.
-## 13  420.002             Sweden
-## 14  307.553           Malaysia
-## 15  237.746              Qatar
-## 16  220.269            Nigeria
-## 18  191.289            Denmark
-## 19  172.743              Libya
-## 20  158.204      Venezuela, RB
+##       value              country
+## 1  3528.873                China
+## 2  2513.347                Japan
+## 3  2381.375              Germany
+## 4  1043.508   Russian Federation
+## 5  1007.082         Saudi Arabia
+## 6  1005.330          Switzerland
+## 7   947.832          Netherlands
+## 8   785.639               Norway
+## 9   690.889            Singapore
+## 10  686.217            Euro area
+## 11  578.514               Kuwait
+## 12  499.313          Korea, Rep.
+## 13  441.669               Sweden
+## 14  296.784             Malaysia
+## 15  258.085 Hong Kong SAR, China
+## 16  237.746                Qatar
+## 17  218.575              Nigeria
+## 18  212.397              Denmark
+## 20  178.995                Libya
+## 21  169.079        Venezuela, RB
 ```
 
 # Визуализация топ 20 стран положительного счета текущих операций торгового баланса за 15 лет
@@ -455,40 +533,32 @@ top20df <- data.frame()
 for(i in top20$country){
         temp <- grep(i, alldata$country)
         temp <- alldata[temp,]
-         
         top20df <- rbind(top20df, temp)
-        }
+}
+
 top20df$year <- as.numeric(top20df$year)
-top10 <- top20df[1:160,]
-top10$year <- as.numeric(top10$year)
-top10 <- top10[-(128:144),]
-class(top20df$value)
-```
 
-```
-## [1] "numeric"
-```
-
-```r
+# Построение графика топ 20 стран мира
 ggplot(data = top20df, aes(x = year, y = value))+
-        geom_line(size = 0.1, aes(colour=country))+
-        geom_point(aes(colour=country))+
+        geom_line(size = 0.2, aes(colour=country))+
+        geom_point(size = 0.2, aes(colour=country))+
         
         xlab("Year")+
         ylab("billion US dollars")+
-        ggtitle("Current account balance - China and USA")
+        ggtitle("Current account balance - Top20 countries")
 ```
 
-![plot of chunk unnamed-chunk-350](figure/unnamed-chunk-350-1.png)
+![plot of chunk unnamed-chunk-341](figure/unnamed-chunk-341-1.png)
 
 
 
 ## 6) Выводы
-Если рассматривать США и другие западные страны как единое целое, то из сравнительного графика стран Запада и АТР, можно увидеть, что их балансы почти полностью зеркальны. Запад имеет отрицательный баланс текущих операций, тогда как страны АТР положительный, что подтверждает переток денег с Запада в Азиатский регион. 
-Если разделить Западную цивилизацию на ее составляющие, то мы увидим что ЕС, за счет Германии, которая заняла 2-е место в таблице положительных балансов счета текущих операций за последнии 15 лет с цифрой 3279.304 млрд, имеет положительный баланс. 
-Вывод таков, что основной переток капитла происходит именно из США в Китай, как мы можем это увидеть на сравнительном графике этих двух стран. 
-Интересным открытием оказалось, что в 2009 году при глобальной "просадке" Еврозоны на минус 195.198 млрд USD по балансу текущего счета, Германия за этот же год показала плюс 198.872 млрд USD, из чего можно сделать вывод, что бурный прирост капитала в Германии происходит именно за счет ЕС.   
-В общем, результаты такого мини-исследования подтверждают теорию Дж. Арриги об окончании Американского цикла, и перехода на Азиатский, а точнее на Китайский системный цикл накопления капиталов. Вместе с Китаем, за счет рынка США так-же растут Япония и Ю. Корея. Страны вроде РФ и Саудовской Аравии росли в основном за счет дорогих энергоресурсов, после падения цен на которые, как видим на последнем графике, наиболее "просевшей"" страной является именно Саудовская Аравия. 
+Из построенных сравнительных таблиц и графиков для анализа балансов текущих операций стран Западной цивилизации и восточной Азии,  четко просматривается тенденция перетока капиталов с Запада на Восток. График построенный для этих целей выглядет практически зеркальным для обоих регионов. В периоды где отрицательные показатели баланса текущего счета для Запада усиливаться, для Азии эти-же показатели растут, и наоборот.   
+Если разделить Западную цивилизацию на ее составляющие, можно увидеть что ЕС, за счет положительного баланса счета текущих операций Германии, которая заняла 2-е место в таблице топ 20 стран по этому показателю за 15 лет (с 2000 по 2015)  с цифрой 3279.304 млрд, имеет положительный баланс.
+Главный вывод таков, что основной переток капитла происходит не в целом с Запада на Восток, а как Дж. Арриги предполагал, из США в Китай. Эту мысль подтверждает сравнительный график баланса счета текущих операций этих двух стран.
+Интересным открытием оказалось, что в 2009 году при глобальной "просадке" Еврозоны на минус 195.198 млрд USD по балансу текущего счета, Германия за этот же год показала плюс 198.872 млрд USD, из чего можно сделать вывод, что бурный прирост капитала в Германии происходит за счет ЕС. 
+В общем, результаты этого мини-исследования сквозь призму показателя "Счета текущих операций платежного баланса" подтверждают теорию Дж. Арриги об окончании Американского цикла, и перехода на Азиатский, а точнее Китайский системный цикл накопления капиталов. Вместе с Китаем, за счет рынка США так-же растут Япония и Ю. Корея. Страны вроде РФ и Саудовской Аравии росли в основном за счет дорогих энергоресурсов, после падения цен на которые, как видим на последнем графике, наиболее "просевшей"" страной является Саудовская Аравия.
+
 
 
 [1]: https://ru.wikipedia.org/wiki/Счёт_текущих_операций
